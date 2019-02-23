@@ -1,0 +1,211 @@
+{% load staticfiles %}
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" type="text/css"
+	href="{% static 'css/style.css' %}" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+<script src="{% static 'js/sigma.min.js' %}"></script>
+<script src="{% static 'js/sigma.parsers.json.js' %}"></script>
+
+</head>
+<body>
+
+	<!-- Header with image  -->
+	<div class="ui-widget">
+		<img style="float: left; width: 130px; height: 130px"
+			src="{% static 'img/images.jpg' %}"><br>
+		<div style="float: left; position: relative; top: 15px; left: 20px;">
+			<span style="font-size: 2.5em;"> Tweetment Viz. </span><br> <span
+				style="font-size: 1.5em;"> Tweet Sentiment Visualization </span>
+		</div>
+		<br style="clear: both;"> <br style="clear: both;"> <br
+			style="clear: both;">
+	</div>
+	<!-- End of header  -->
+
+
+	<span class='ui-widget' style="font-size: 15px">Search Keyword:
+	</span>
+	<input type="search" name="keyword" placeholder="Search Your Tweets"
+		id="searchbox" style="font-color: black;" required />
+	<button id="searchButton"
+		class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+		role="button" aria-disabled="false" style="font-size: 15px;">
+		<span class="ui-button-text"
+			style="padding: .4em .4em .4em .4em; font-size: 15px;">Query</span>
+	</button>
+
+
+
+
+
+	<br style="clear: both;">
+	<br style="clear: both;">
+
+	<div class="lds-roller" style="top: 60%; left: 20%; display: none;">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+	<!-- <div id="loader" style="display:none;"></div> -->
+
+	<span id='noData' style="display: none; color: red;">No data
+		found for the enter keyword</span>
+
+	<div id="chartContainer"
+		style="height: 300px; width: 50%; display: none; border: 1px solid #000000; border-radius: 10px;"></div>
+	<div id="sigmaChart"
+		style="height: 300px; width: 50%; float: right; display: none; border: 1px solid #000000; border-radius: 10px;"></div>
+	<br style="clear: both;">
+	<br style="clear: both;">
+	<div class="ui-widget" style="position: relative;">
+		<span style="font-size: 1.5em; font-weight: bold"> What Do I
+			Do? </span>
+
+		<blockquote style='font-size: 13px'>
+			Type a keyword into the input field, then click the Query button.
+			Recent Tweets that contain your keyword are pulled from Twitter and
+			visualized in the Chart format. Sentiment of the each Tweet is
+			categorized into one of the three class - <span style="color: green">Positive</span>,</span><span
+				style="color: red"> Negative</span> and <span style='color: blue'>Neutral.</span>
+		</blockquote>
+	</div>
+</body>
+
+</html>
+<script type="text/javascript">
+	$('document').ready(function() {
+		$('.lds-roller').hide();
+		$('#noData').hide();
+
+	});
+	$('#searchButton').click(function() {
+		$('#chartContainer').hide();
+		$('#noData').hide();
+		var val = $('input#searchbox').val();
+		if (val != "" && val != null) {
+
+			$('.lds-roller').show();
+			$.ajax({
+				type : 'POST',
+				url : 'result',
+				data : {
+					param : $('input#searchbox').val(),
+					csrfmiddlewaretoken : '{{ csrf_token }}'
+				}, //passing some input here
+				dataType : 'json',
+				success : function(response) {
+					$('.lds-roller').hide();
+					var listNames = response.nameList;
+					var pos = response.positive;
+					var neg = response.negative;
+					var neu = response.neutral;
+					if (pos == 0 && neg == 0 && neu == 0) {
+
+						$('#noData').slideDown();
+					} else {
+
+						chart = doughnut(pos, neg, neu);
+						/* g = sigmaJSDisplay(listNames); */
+						$('.lds-roller').hide();
+						$('#chartContainer').show();
+						chart.render();
+						/* s = new sigma({
+							graph : g,
+							container : 'sigmaChart',
+							settings : {
+
+								drawLabels : true
+							}
+						});
+						$('#sigmaChart').show();
+						s.refresh();
+						 */
+					}
+				}
+			});
+
+		}
+	});
+
+	function doughnut(pos, neg, neu) {
+		var chart = new CanvasJS.Chart("chartContainer", {
+			animationEnabled : true,
+			title : {
+				text : "Sentimental analysis"
+			},
+			backgroundColor : "#D3D3D3",
+			borderColor : "black",
+			data : [ {
+				type : "doughnut",
+				startAngle : 60,
+				innerRadius : 75,
+				indexLabelFontSize : 17,
+				indexLabel : "{label} - #percent%",
+				indexLabelFontColor : "black",
+				toolTipContent : "<b>{label}:</b> {y} (#percent%)",
+				toolTiofontCOlor : 'white',
+				dataPoints : [ {
+					y : pos,
+					label : "Positive",
+					color : "rgb(124,252,0)",
+					markerBorderColor : "black"
+
+				}, {
+					y : neg,
+					label : "Negative",
+					color : "rgb(250,125,114)",
+					markerBorderColor : "black"
+				}, {
+					y : neu,
+					label : "Neutral",
+					color : "rgb(135,206,235)",
+					markerBorderColor : "black"
+				}, ]
+			} ]
+		});
+		return chart
+	}
+	function sigmaJSDisplay(listNames) {
+		count = listNames.length;
+		var g = {
+			nodes : [],
+			edges : []
+		}
+		for (i = 1; i <= count; i++) {
+
+			g.nodes.push({
+				id : 'n' + i,
+				label : listNames[i - 1],
+				x : Math.random() + 4,
+				y : Math.random() + 4,
+				size : 1,
+				color : "#00FF00"
+			});
+
+		}
+		for (i = 1; i <= count; i++) {
+			for (j = count; j > i; j--) {
+				g.edges.push({
+					id : 'e' + i + '' + j,
+					source : 'n' + i,
+					target : 'n' + j,
+					type : 'curve',
+					size : 1,
+					color : '#FFF'
+				});
+			}
+		}
+		return g;
+	}
+</script>

@@ -1,0 +1,81 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+.bg {
+    /* The image used */
+    background-image: url("twitter_homePage.jpg");
+
+    /* Full height */
+    height: 100%; 
+
+	filter: blur(6px);
+  
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.button {
+  display: inline-block;
+  border-radius: 15px;
+  background-color: #B0E0E6;
+  border: none;
+  color: #00000;
+  text-align: center;
+  font-size: 20px;
+  padding: 8px;
+  width: 150px;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin: 5px;
+  position: absolute;
+  top: 88%;
+  left: 45%;
+}
+
+.button span {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.button span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.button:hover span {
+  padding-right: 25px;
+}
+
+.button:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+div.main {
+	min-height: 100px;
+	overflow: hidden;
+	top: 5%;
+	left: 60%;
+	
+}
+h1 {
+	margin: 1em 0 0.75em;
+	padding: 0 0 5px 0;
+	color: #FFFFFF;
+	font-weight: 500;
+	position: absolute;
+	text-shadow: 0 2px 0 rgba(255,255,255,0.5);
+	font-size: 60px;
+	line-height: 40px;
+	font-family: 'Carrois Gothic', sans-serif;
+	top: 5%;
+	left: 60%;
+}
